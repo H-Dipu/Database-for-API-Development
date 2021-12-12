@@ -1,0 +1,98 @@
+Dot Net Core ApI 6
+https://www.entityframeworktutorial.net/
+
+**https://www.youtube.com/watch?v=DoYmpAPoixI 
+
+
+Dot Net Core ApI 5
+*** https://dotnettutorials.net/lesson/creating-asp-net-core-web-api-project-using-net-core-cli/
+
+*** https://www.youtube.com/watch?v=Ptyawrz2XXU&list=PLD7ok7_L_-yEDLnV47eAy_PiROUYgl-Hf&index=3&ab_channel=DipjyotiSikder
+
+
+dotnet new 
+dotnet new webapi --name MyFirstWebAPIProject
+cd MyFirstWebAPIProject
+dotnet build
+dotnet run
+dotnet watch run
+dotnet tool install --global dotnet-ef
+dotnet ef
+dotnet ef migrations add NameOfMigration
+dotnet ef database update 
+https://localhost:5001 
+http://localhost:5000
+https://localhost:5001/swagger/
+
+Database Connection:
+Dummy databased:
+https://github.com/CuriousDrive/EFCore.AllDatabasesConsidered/blob/main/MS%20SQL%20Server/Database/northwind.sql
+Azure data studio:
+https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio?view=sql-server-ver15&viewFallbackFrom=sql-server-ver15(Azure
+->appsettings.json
+ "ConnectionStrings": {
+        "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=dummyDB;Trusted_Connection=True;MultipleActiveResultSets=true"
+
+    }
+
+
+.NET CLI 5
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 5.0.12
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 5.0.12
+
+.NET CLI 6
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.0
+dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson --version 6.0.0
+
+https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Design/
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.0
+
+https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.SqlServer/
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.0
+
+https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.NewtonsoftJson/
+
+//program
+//Database
+builder.Services.AddDbContext<NorthwindContext>(options => {
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection"));
+});
+//Add Newton soft Json
+builder.Services.AddMvc(option => option.EnableEndpointRouting = false)
+.AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
+
+Toad-For-Sql-Server
+https://downloaddevtools.com/en/product/2388/free-download-toad-for-sql-server
+Toad Data Modeler:
+downloaddevtools.com/en/product/652/free-download-toad-data-modeler
+
+//Controller
+ //Loading realated data or join table 
+        [HttpGet("GetCustomerOrders")]
+        public async Task<ActionResult<Customer>> GetCustomerOrders(string customerId)
+        {
+            var customer = await _context.Customers
+               .Where(c => c.CustomerId == customerId)
+               .Include(c => c.Orders)
+               .FirstOrDefaultAsync();
+            return customer == null ? NotFound() : customer;
+            /*
+            Select c.CustomerID,o.* from Customers c 
+            Inner Join Orders o on o.CustomerID =c.CustomerID
+             Where c.CustomerID='ANATR'
+             */
+        }
+        //Loading Data from stored procedure 
+        [HttpGet("CustOrdersDetailAsync")]
+        public async Task<IEnumerable<CustOrdersDetailResult>> CustOrdersDetailAsync(int? orderId)
+        {
+            return await _context.GetProcedures().CustOrdersDetailAsync(orderId);
+        }
+
+       //Loading Data from View
+        [HttpGet("CustomerAndSuppliersByCity")]
+        public async Task<IEnumerable<CustomerAndSuppliersByCity>> CustomerAndSuppliersbyCity()
+        {
+            return await _context.CustomerAndSuppliersByCities.ToListAsync();
+        }
